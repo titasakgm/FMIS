@@ -169,6 +169,14 @@
       attribution: "FMIS@MP"
     });
 
+    var spk_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+      layers: '12-Agri-Land-Reform',
+      format: 'image/png',
+      transparent: true,
+      opacity: 0.75,
+      version: '1.1.0',
+      attribution: "FMIS@MP"
+    });
 
     // Overlay layers are grouped
     var groupedOverlays = {
@@ -188,7 +196,8 @@
       "ที่ดินรัฐ": {
         "เขตอุทยานแห่งชาติ": npark_wms,
         "เขตรักษาพันธุ์สัตว์ป่า": wlife_wms,
-        "เขตห้ามล่าสัตว์ป่า": nhunt_wms
+        "เขตห้ามล่าสัตว์ป่า": nhunt_wms,
+        "ส.ป.ก.": spk_wms
       }
     };
 
