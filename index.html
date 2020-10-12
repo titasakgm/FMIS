@@ -28,6 +28,11 @@
       overflow-y: scroll;
       padding-right: 10px;
     }
+    .leaflet-crosshair,
+    .leaflet-crosshair .leaflet-interactive {
+      cursor: crosshair;
+    }
+
   </style>
 </head>
 <body>
@@ -232,6 +237,28 @@
     map.on(L.Draw.Event.CREATED, function (event) {
         var layer = event.layer;
         drawnItems.addLayer(layer);
+    });
+
+    map.on('click', function(e) {
+      var lng = e.latlng.lng;
+      var lat = e.latlng.lat;
+
+      var url = "http://fmis.forest.ku.ac.th:4567/check_law?lon=" + lng;
+      url += "&lat=" + lat;
+            
+      $.ajax({
+        type: "GET",
+        crossDomain: true,
+        dataType: "json",
+        url: url,
+        success: function(data) {
+          var info = JSON.stringify(data)
+          alert(info);
+        },
+        error: function() {
+          alert("lng:" + lng + " lat:" + lat);
+        }
+      })
     });
   </script>
 </body>
