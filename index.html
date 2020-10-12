@@ -252,13 +252,72 @@
         dataType: "json",
         url: url,
         success: function(data) {
-          var info = JSON.stringify(data)
-          alert(info);
+          var o = data[0]; // JSON Object
+          var lon = o.longitude;
+          var lat = o.latitude;
+          var name = o.law_name;
+          var path = o.law_folder;
+          // create marker object create content and open popup
+          var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>Detail</a>";
+          msg += "<br/><p>LAT:" + parseFloat(lat).toFixed(4);
+          msg += " LON:" + parseFloat(lon).toFixed(4) + "</p>";
+          var ptIcon = L.icon({
+            iconUrl: 'point.png',
+            iconSize: [1,1],
+            popupAnchor: [1,1]
+          });
+          var options = {
+            'maxWidth': '500',
+            'className': 'custom'
+          }
+          L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,options).addTo(map);
         },
         error: function() {
           alert("lng:" + lng + " lat:" + lat);
         }
       })
+    });
+
+    // LAB
+    var owsrootUrl = "http://fmis.forest.ku.ac.th:8080/geoserver/ows";
+    var defaultParameters = {
+      service : 'WFS',
+      version : '1.0.0',
+      request : 'GetFeature',
+      typeName : 'MP:08-Natural-Park',
+      outputFormat : 'text/javascript',
+      format_options : 'callback:getJson',
+      srsName : 'EPSG:4326'
+    };
+
+    var parameters = L.Util.extend(defaultParameters);
+    var URL = owsrootUrl + L.Util.getParamString(parameters);
+    var WFSLayer = null;
+
+    var ajax = $.ajax({
+      url: URL,
+      dataType: 'jsonp',
+      jsonpCallback: 'getJson',
+      success: function (response) {
+        WFSLayer = L.geoJson(response, {
+          style: function (feature) {
+            return {
+              stroke: false,
+              fillColor: 'FFFFFF',
+              fillOpacity: 0
+            };
+          },
+          onEachFeature: function (feature, layer) {
+            popupOptions = { maxWidth: 200 } ;
+            var name = feature.properties.name_e;
+            var area = feature.properties.area;
+            var msg = "<h1>" + name + "</h1><p>AREA:" + area + "</p>"; 
+            //layer.bindPopup("Popup text, access attributes with feature.properties.ATTRIBUTE_NAME"
+            //  ,popupOptions);
+            layer.bindPopup(msg, popupOptions);
+          }
+        }).addTo(map);
+      }
     });
   </script>
 </body>
