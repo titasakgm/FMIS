@@ -245,7 +245,7 @@
 
       var url = "http://fmis.forest.ku.ac.th:4567/check_law?lon=" + lng;
       url += "&lat=" + lat;
-            
+          
       $.ajax({
         type: "GET",
         crossDomain: true,
@@ -253,29 +253,35 @@
         url: url,
         success: function(data) {
           var o = data[0]; // JSON Object
-          var lon = o.longitude;
-          var lat = o.latitude;
-          var name = o.law_name;
-          var path = o.law_folder;
-          // create marker object create content and open popup
-          var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>Detail</a>";
-          msg += "<br/><p>LAT:" + parseFloat(lat).toFixed(4);
-          msg += " LON:" + parseFloat(lon).toFixed(4) + "</p>";
-          var ptIcon = L.icon({
-            iconUrl: 'point.png',
-            iconSize: [1,1],
-            popupAnchor: [1,1]
-          });
-          var options = {
-            'maxWidth': '500',
-            'className': 'custom'
+          if (o && o.longitude) {
+            var lon = parseFloat(o.longitude);
+            var lat = parseFloat(o.latitude);
+            var name = o.law_name;
+            var path = o.law_folder;
+
+            // create marker object create content and open popup
+            var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>[ รายละเอียด ]</a>";
+            msg += "<br/><p>LAT:" + lat.toFixed(4);
+            msg += " LON:" + lon.toFixed(4) + "</p>";
+            msg += "<a href='http://maps.google.com/maps?q=" + lat + "," + lon + "' target='_blank'>";
+            msg += "[ ไปที่ตำแหน่งนี้ ]</a>";
+
+            var ptIcon = L.icon({
+              iconUrl: 'point.png',
+              iconSize: [1,1],
+              popupAnchor: [1,1]
+            });
+            var options = {
+              'maxWidth': '500',
+              'className': 'custom'
+            }
+            L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,options).addTo(map);
           }
-          L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,options).addTo(map);
         },
         error: function() {
           alert("lng:" + lng + " lat:" + lat);
         }
-      })
+      });
     });
 
     // LAB
