@@ -263,7 +263,7 @@
             var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>[ รายละเอียด ]</a>";
             msg += "<br/><p>LAT:" + lat.toFixed(4);
             msg += " LON:" + lon.toFixed(4) + "</p>";
-            msg += "<a href='http://maps.google.com/maps?q=" + lat + "," + lon + "' target='_blank'>";
+            msg += "<a href='http://maps.google.com/?q=" +lat + "," + lon + "&ll=" + lat + "," + lon + "&z=10' target='_blank'>";
             msg += "[ ไปที่ตำแหน่งนี้ ]</a>";
 
             var ptIcon = L.icon({
