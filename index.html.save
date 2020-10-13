@@ -1,346 +1,758 @@
 <!DOCTYPE html>
+
 <html>
+
 <head>
+
   <title>Leaflet</title>
+
   <meta charset="utf-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+
   <style>
+
     body {
+
       padding: 0px;
+
       margin: 0px;
+
       height: 100%;
+
       width: 100%;
+
     }
+
     #map {
+
       width: 100%;
+
       height: 100%;
+
     }
-    .leaflet-control-layers-group-name {
-      font-weight: bold;
-      margin-bottom: .2em;
-      margin-left: 3px;
-    }
-    .leaflet-control-layers-group {
-      margin-bottom: .5em;
-    }
-    .leaflet-control-layers-scrollbar {
-      overflow-y: scroll;
-      padding-right: 10px;
-    }
+
     .leaflet-crosshair,
+
     .leaflet-crosshair .leaflet-interactive {
+
       cursor: crosshair;
+
     }
-    .leaflet-popup-content {
-      width: 240px !important;
+
+    #delete, #export {
+
+      position: absolute;
+
+      top:50px;
+
+      right:10px;
+
+      z-index:100;
+
+      background:white;
+
+      color:black;
+
+      padding:6px;
+
+      border-radius:4px;
+
+      font-family: 'Helvetica Neue';
+
+      cursor: pointer;
+
+      font-size:12px;
+
+      text-decoration:none;
+
     }
+
+    #export {
+
+            top:90px;
+
+        }
+
+    .leaflet-control-layers-group-name {
+
+      font-weight: bold;
+
+      margin-bottom: .2em;
+
+      margin-left: 3px;
+
+    }
+
+    .leaflet-control-layers-group {
+
+      margin-bottom: .5em;
+
+    }
+
+    .leaflet-control-layers-scrollbar {
+
+      overflow-y: scroll;
+
+      padding-right: 10px;
+
+    }
+
+
+    /*css to custom leaflet default styles */
+
+    .custom .leaflet-popup-tip , .custom .leaflet-popup-content-wrapper{
+
+        background : #adc9e0;
+
+        //color: #ffffff;
+
+    }    
+
+
   </style>
+
 </head>
+
 <body>
+
   <div id="map"></div>
 
+
   <script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+
   <script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.1.4/zepto.min.js"></script>
+
   <script src="js/autosize.js"></script>
 
+
   <!-- script src="js/leaflet-src.js"></script -->
-  <script src="js/leaflet.ajax.js"></script>  
-  <script src="js/leaflet.groupedlayercontrol.js"></script>
+
+  <!-- script src="js/leaflet.ajax.js"></script -->  
+
+  <!-- script src="js/leaflet.groupedlayercontrol.js"></script -->
+
 
   <!-- add editing tools -->
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
 
+
+  <script
+
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+
+  crossorigin="anonymous"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>  
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-groupedlayercontrol/0.6.1/leaflet.groupedlayercontrol.min.js"></script>
+
+
   <script>
+
     Autosize.enable();
+
+
+    function  getPopupInfo(y,x) {
+
+        var msg = "" ;
+
+        var url = "http://fmis.forest.ku.ac.th:4567/check_law?lon=" + y +"&lat=" + x;
+
+            $.ajax({
+
+            type: "GET",
+
+            crossDomain: true,
+
+            dataType: "json",
+
+            url: url,
+
+            success: function(data) {
+
+                var o = data[0]; // JSON Object
+
+                if(! $.isEmptyObject(o)){
+
+                    var lon = o.longitude;
+
+                    var lat = o.latitude;
+
+                    var name = o.law_name;
+
+                    var path = o.law_folder;
+
+                    var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'> เอกสารประกอบเพื่อดูรายละเอียด</a>";
+
+                    msg += "<embed src=\""+path +"\"type=\"application/pdf\" width=\"100%\" height=\"100%\">";
+
+                    msg += "<br/><p>LAT:" + parseFloat(lat).toFixed(6);
+
+                    msg += " LON:" + parseFloat(lon).toFixed(6) + "</p>";
+
+                    mp.bindPopup(msg,popupOptions).openPopup();
+
+                } else {
+
+                    msg =  " No info on lng:" + y + " , lat:" + x ;
+
+                    mp.bindPopup(msg,popupOptions).openPopup();
+
+                }
+
+            },
+
+            error: function() {
+
+                msg =  " No info on lng:" + lng + " , lat:" + lat ;
+
+                mp.bindPopup("Error Ajax",popupOptions).openPopup();
+
+            }
+
+        });
+
+    }
+
 
     var map = L.map('map').setView([13.736717,100.523186], 10);
 
+
     // BASE layer
+
     var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+
     })
+
     .addTo(map);
 
+
     // OVERLAYERS
+
     var prov_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '01-Province',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.5,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var amp_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '02-District',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.5,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });    
+
 
     var tam_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '03-Subdistrict',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.5,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });    
 
+
     var moo_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '04-Village',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     // Country resources
-    var stream_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '05-Stream',
-      format: 'image/png',
-      transparent: true,
-      opacity: 0.75,
-      version: '1.1.0',
-      attribution: "FMIS@MP"
-    });
 
     var stream_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '05-Stream',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
+
+    var stream_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
+      layers: '05-Stream',
+
+      format: 'image/png',
+
+      transparent: true,
+
+      opacity: 0.75,
+
+      version: '1.1.0',
+
+      attribution: "FMIS@MP"
+
+    });
+
 
     var soil_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '06-Soil',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var road_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '13-Road',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var rail_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '14-Railway',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var water_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '07-Watershed',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     // State Lands
+
     var npark_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '08-Natural-Park',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var wlife_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '10-Wildlife',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var nhunt_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '11-Non-Hunting',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     var spk_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+
       layers: '12-Agri-Land-Reform',
+
       format: 'image/png',
+
       transparent: true,
+
       opacity: 0.75,
+
       version: '1.1.0',
+
       attribution: "FMIS@MP"
+
     });
+
 
     // FeatureGroup is to store editable layers
+
     var drawnItems = new L.FeatureGroup();
+
     map.addLayer(drawnItems);
+
     var drawControl = new L.Control.Draw({
+
       edit: {
+
         featureGroup: drawnItems
+
       }
+
     });
+
     map.addControl(drawControl);
 
+
     // Overlay layers are grouped
+
     var groupedOverlays = {
+
       "ขอบเขตการปกครอง": {
+
         "หมู่บ้าน": moo_wms,
+
         "ตำบล": tam_wms,
+
         "อำเภอ": amp_wms,
+
         "จังหวัด": prov_wms
+
       },
+
       "ทรัพยากรธรรมชาติ": {
+
         "Stream": stream_wms,
+
         "Soil": soil_wms,
+
         "Watershed": water_wms,
+
         "Road": road_wms,
+
         "Railway": rail_wms
+
       },
+
       "ที่ดินรัฐ": {
+
         "เขตอุทยานแห่งชาติ": npark_wms,
+
         "เขตรักษาพันธุ์สัตว์ป่า": wlife_wms,
+
         "เขตห้ามล่าสัตว์ป่า": nhunt_wms,
+
         "ส.ป.ก.": spk_wms
+
       },
+
       "Edit Map": {
+
         "Draw Layer": drawnItems 
+
       }
+
     };
+
 
     var baseMaps = {
+
       "OSM": osm
+
     };
+
 
     // Use custom grouped layer control
+
     var layerControl = L.control.groupedLayers(baseMaps,groupedOverlays);
+
     map.addControl(layerControl);
 
+
     map.on(L.Draw.Event.CREATED, function (event) {
+
         var layer = event.layer;
+
         drawnItems.addLayer(layer);
+
     });
 
-    var ptIcon = L.icon({
-      iconUrl: 'marker-circle-red.png',
-      iconSize: [1,1],
-      popupAnchor: [1,1]
-    });
-
-    var mp;
-
-    var popupOptions = {
-      'maxWidth': '400',
-      'minWidth': '250',
-      'className': 'custom'
-    }
 
     map.on('click', function(e) {
-      mp = new L.Marker([e.latlng.lat, e.latlng.lng],
-        { icon: ptIcon }).addTo(map);
-      getPopupInfo(e.latlng.lng, e.latlng.lat);
-    });
 
-    function getPopupInfo(lng,lat) {
-      var msg = "";
+      var lng = e.latlng.lng;
+
+      var lat = e.latlng.lat;
+
+
       var url = "http://fmis.forest.ku.ac.th:4567/check_law?lon=" + lng;
+
       url += "&lat=" + lat;
+
           
+
       $.ajax({
+
         type: "GET",
+
         crossDomain: true,
+
         dataType: "json",
+
         url: url,
+
         success: function(data) {
+
           var o = data[0]; // JSON Object
-          if (! $.isEmptyObject(o)) {
+
+          if (o && o.longitude) {
+
             var lon = parseFloat(o.longitude);
+
             var lat = parseFloat(o.latitude);
+
             var name = o.law_name;
+
             var path = o.law_folder;
 
+
             // create marker object create content and open popup
-            var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
-            msg += "<embed src='" + path + "#zoom=fitH' type='application/pdf' ";
-            msg += "height='100%' width='100%'>";
-            msg += "<br/><p>LAT:" + lat.toFixed(6);
-            msg += " LON:" + lon.toFixed(6);
+
+            var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>[ รายละเอียด ]</a>";
+
+            msg += "<br/><p>LAT:" + lat.toFixed(4);
+
+            msg += " LON:" + lon.toFixed(4) + "</p>";
+
             msg += "<a href='http://maps.google.com/?q=" +lat + "," + lon + "&ll=" + lat + "," + lon + "&z=10' target='_blank'>";
-            msg += "<br/>[ ไปที่ตำแหน่งนี้ ]</a></p>";
 
-            mp.bindPopup(msg, popupOptions).openPopup();
+            msg += "[ ไปที่ตำแหน่งนี้ ]</a>";
 
-            L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,popupOptions).addTo(map);
+
+            var ptIcon = L.icon({
+
+              iconUrl: 'point.png',
+
+              iconSize: [1,1],
+
+              popupAnchor: [1,1]
+
+            });
+
+
+            var options = {
+
+              'maxWidth': '500',
+
+              'className': 'custom'
+
+            }
+
+
+            var mp = new L.Marker(
+
+              [e.latlng.lat, e.latlng.lng],
+
+              { icon: ptIcon }
+
+            ).addTo(map);
+
+
+            getPopupInfo( e.latlng.lng , e.latlng.lat );
+
           }
+
         },
+
         error: function() {
+
           alert("lng:" + lng + " lat:" + lat);
+
         }
+
       });
-    };
+
+    });
+
 
     // LAB
+
     var owsrootUrl = "http://fmis.forest.ku.ac.th:8080/geoserver/ows";
+
     var defaultParameters = {
+
       service : 'WFS',
+
       version : '1.0.0',
+
       request : 'GetFeature',
+
       typeName : 'MP:08-Natural-Park',
+
       outputFormat : 'text/javascript',
+
       format_options : 'callback:getJson',
+
       srsName : 'EPSG:4326'
+
     };
 
+
     var parameters = L.Util.extend(defaultParameters);
+
     var URL = owsrootUrl + L.Util.getParamString(parameters);
+
     var WFSLayer = null;
 
+
     var ajax = $.ajax({
+
       url: URL,
+
       dataType: 'jsonp',
+
       jsonpCallback: 'getJson',
+
       success: function (response) {
+
         WFSLayer = L.geoJson(response, {
+
           style: function (feature) {
+
             return {
+
               stroke: false,
+
               fillColor: 'FFFFFF',
+
               fillOpacity: 0
+
             };
+
           },
+
           onEachFeature: function (feature, layer) {
+
             popupOptions = { maxWidth: 200 } ;
+
             var name = feature.properties.name_e;
+
             var area = feature.properties.area;
+
             var msg = "<h1>" + name + "</h1><p>AREA:" + area + "</p>"; 
+
             //layer.bindPopup("Popup text, access attributes with feature.properties.ATTRIBUTE_NAME"
+
             //  ,popupOptions);
+
             layer.bindPopup(msg, popupOptions);
+
           }
+
         }).addTo(map);
+
       }
+
     });
   </script>
 </body>
 </html>
+
 
