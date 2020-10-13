@@ -281,8 +281,8 @@
 
             // create marker object create content and open popup
             var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
-            msg += "<embed src='" + path + "#zoom=fitH' type='application/pdf' ";
-            msg += "height='100%' width='100%'>";
+            msg += "<embed src='" + path + "#page=1&zoom=0&view=fit' type='application/pdf' ";
+            msg += "width='100%'>";
             msg += "<br/><p>LAT:" + lat.toFixed(6);
             msg += " LON:" + lon.toFixed(6);
             msg += "<a href='http://maps.google.com/?q=" +lat + "," + lon + "&ll=" + lat + "," + lon + "&z=10' target='_blank'>";
