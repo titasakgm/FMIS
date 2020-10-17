@@ -33,7 +33,10 @@
       cursor: crosshair;
     }
     .leaflet-popup-content {
-      width: 240px !important;
+      width: 240px;
+    }
+    #npark {
+      cursor: crosshair !important;
     }
   </style>
 </head>
@@ -52,16 +55,38 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
 
+  <!-- add BetterWMS.js -->
+  <!-- script src="js/BetterWMS.js"></script -->
+
+  <!-- add Crosshair.js -->
+  <script src="js/Crosshair.js"></script>
+
   <script>
     Autosize.enable();
 
     var map = L.map('map').setView([13.736717,100.523186], 10);
+
+    L.crosshairs({
+      style: {
+        opacity: 1,
+        fillOpacity: 0,
+        weight: 2,
+        color: '#900',
+        radius: 10
+      }
+    }).addTo(map);
 
     // BASE layer
     var osm = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     })
     .addTo(map);
+
+    var esri_clear = L.tileLayer('https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: "<a href='https://wiki.openstreetmap.org/wiki/Esri'>Terms & Feedback</a>",
+      maxZoom: 22,
+      maxNativeZoom: 22
+    });
 
     // OVERLAYERS
     var prov_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
@@ -74,7 +99,7 @@
     });
 
     var amp_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '02-District',
+      layers: '02-Amphoe',
       format: 'image/png',
       transparent: true,
       opacity: 0.5,
@@ -83,7 +108,7 @@
     });    
 
     var tam_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '03-Subdistrict',
+      layers: '03-Tambon',
       format: 'image/png',
       transparent: true,
       opacity: 0.5,
@@ -92,7 +117,7 @@
     });    
 
     var moo_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '04-Village',
+      layers: '04-Mooban',
       format: 'image/png',
       transparent: true,
       opacity: 0.75,
@@ -157,7 +182,7 @@
 
     // State Lands
     var npark_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '08-Natural-Park',
+      layers: '08-National Park',
       format: 'image/png',
       transparent: true,
       opacity: 0.75,
@@ -229,7 +254,8 @@
     };
 
     var baseMaps = {
-      "OSM": osm
+      "OSM": osm,
+      "Esri Satellite": esri_clear
     };
 
     // Use custom grouped layer control
@@ -237,8 +263,8 @@
     map.addControl(layerControl);
 
     map.on(L.Draw.Event.CREATED, function (event) {
-        var layer = event.layer;
-        drawnItems.addLayer(layer);
+      var layer = event.layer;
+      drawnItems.addLayer(layer);
     });
 
     var ptIcon = L.icon({
@@ -248,6 +274,8 @@
     });
 
     var mp;
+    var hili, label;
+    var cur_pname;
 
     var popupOptions = {
       'maxWidth': '400',
@@ -255,42 +283,78 @@
       'className': 'custom'
     }
 
+    var provOptions = {
+      'maxWidth': '100',
+      'minWidth': '50',
+      'permanent': true,
+      'direction': 'center',
+      'className': 'prov_label'
+    }
+
     map.on('click', function(e) {
       mp = new L.Marker([e.latlng.lat, e.latlng.lng],
         { icon: ptIcon }).addTo(map);
       getPopupInfo(e.latlng.lng, e.latlng.lat);
+      if (map.hasLayer(hili)) {
+        map.removeLayer(hili);
+      }
+    });
+
+    map.on('contextmenu', function(e) {
+      if (map.hasLayer(hili)) {
+        map.removeLayer(hili);
+      }      
     });
 
     function getPopupInfo(lng,lat) {
       var msg = "";
-      var url = "http://fmis.forest.ku.ac.th:4567/check_law?lon=" + lng;
-      url += "&lat=" + lat;
+      var url = "http://fmis.forest.ku.ac.th:4567/check_law/" + lng +"/" + lat;
           
       $.ajax({
         type: "GET",
         crossDomain: true,
         dataType: "json",
         url: url,
-        success: function(data) {
-          var o = data[0]; // JSON Object
-          if (! $.isEmptyObject(o)) {
-            var lon = parseFloat(o.longitude);
-            var lat = parseFloat(o.latitude);
-            var name = o.law_name;
-            var path = o.law_folder;
+        success: function(arr) {
+          for (var i=0;i<arr.length;i++) {
+            var o = arr[i];
+            if (! $.isEmptyObject(o) && o.pcode) { // highlight province via pcode
+              var pcode = o.pcode;
+              cur_pname = o.pname;
+              hili = new L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+                layers: 'MP:province',
+                format: 'image/png',
+                transparent: true,  
+                opacity: 0.8,
+                version: '1.1.0',
+                attribution: 'FMIS@MP',
+                CQL_FILTER: "p_code='" + pcode + "'"
+              }).addTo(map);
 
-            // create marker object create content and open popup
-            var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
-            msg += "<embed src='" + path + "#page=1&zoom=0&view=fit' type='application/pdf' ";
-            msg += "width='100%'>";
-            msg += "<br/><p>LAT:" + lat.toFixed(6);
-            msg += " LON:" + lon.toFixed(6);
-            msg += "<a href='http://maps.google.com/?q=" +lat + "," + lon + "&ll=" + lat + "," + lon + "&z=10' target='_blank'>";
-            msg += "<br/>[ ไปที่ตำแหน่งนี้ ]</a></p>";
+              // mp.bindPopup(cur_pname, provOptions).openPopup();
+              hili.bringToFront();
+            };
 
-            mp.bindPopup(msg, popupOptions).openPopup();
+            if (! $.isEmptyObject(o) && o.law_folder) { // gen popup to client
+              var lon = parseFloat(o.longitude);
+              var lat = parseFloat(o.latitude);
+              var name = o.law_name;
+              var path = o.law_folder;
 
-            L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,popupOptions).addTo(map);
+              // create marker object create content and open popup
+              var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
+              msg += "<embed src='" + path + "#page=1&zoom=0&view=fit' type='application/pdf' ";
+              msg += "width='100%'>";
+              msg += "<p>" + cur_pname;
+              msg += "<br/>LAT:" + lat.toFixed(6);
+              msg += " LON:" + lon.toFixed(6);
+              msg += "<a href='http://maps.google.com/?q=" +lat + "," + lon + "&ll=" + lat + "," + lon + "&z=10' target='_blank'>";
+              msg += "<br/>[ ไปที่ตำแหน่งนี้ ]</a></p>";
+  
+              mp.bindPopup(msg, popupOptions).openPopup();
+
+              L.marker([lat, lon],{ icon: ptIcon }).bindPopup(msg,popupOptions).addTo(map);
+            }
           }
         },
         error: function() {
@@ -340,6 +404,7 @@
         }).addTo(map);
       }
     });
+
   </script>
 </body>
 </html>
