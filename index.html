@@ -73,7 +73,7 @@
     var map = L.map('map').setView([13.736717,100.523186], 10);
 
     if (!deviceIsMobile) {
-      L.crosshairs({ style: { opacity: 1, fillOpacity: 0, weight: 2, color: '#900', radius: 10 }
+      L.crosshairs({ style: { opacity: 1, fillOpacity: 0, weight: 2, color: '#28B463', radius: 10 }
       }).addTo(map);
     }
 
@@ -90,7 +90,7 @@
     });
 
     // OVERLAYERS
-    var prov_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var prov_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '01-Province',
       format: 'image/png',
       transparent: true,
@@ -99,7 +99,7 @@
       attribution: "FMIS@MP"
     });
 
-    var amp_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var amp_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '02-Amphoe',
       format: 'image/png',
       transparent: true,
@@ -108,7 +108,7 @@
       attribution: "FMIS@MP"
     });    
 
-    var tam_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var tam_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '03-Tambon',
       format: 'image/png',
       transparent: true,
@@ -117,7 +117,7 @@
       attribution: "FMIS@MP"
     });    
 
-    var moo_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var moo_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '04-Mooban',
       format: 'image/png',
       transparent: true,
@@ -127,7 +127,7 @@
     });
 
     // Country resources
-    var stream_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var stream_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '05-Stream',
       format: 'image/png',
       transparent: true,
@@ -136,7 +136,7 @@
       attribution: "FMIS@MP"
     });
 
-    var stream_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var stream_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '05-Stream',
       format: 'image/png',
       transparent: true,
@@ -145,7 +145,7 @@
       attribution: "FMIS@MP"
     });
 
-    var soil_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var soil_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '06-Soil',
       format: 'image/png',
       transparent: true,
@@ -154,7 +154,7 @@
       attribution: "FMIS@MP"
     });
 
-    var road_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var road_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '13-Road',
       format: 'image/png',
       transparent: true,
@@ -163,7 +163,7 @@
       attribution: "FMIS@MP"
     });
 
-    var rail_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var rail_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '14-Railway',
       format: 'image/png',
       transparent: true,
@@ -172,7 +172,7 @@
       attribution: "FMIS@MP"
     });
 
-    var water_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var water_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '07-Watershed',
       format: 'image/png',
       transparent: true,
@@ -182,8 +182,8 @@
     });
 
     // State Lands
-    var npark_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-      layers: '08-National Park',
+    var npark_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
+      layers: '08-National-Park',
       format: 'image/png',
       transparent: true,
       opacity: 0.75,
@@ -191,7 +191,16 @@
       attribution: "FMIS@MP"
     });
 
-    var wlife_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+     var rforest_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
+      layers: '09-Reserved-Forest',
+      format: 'image/png',
+      transparent: true,
+      opacity: 0.75,
+      version: '1.1.0',
+      attribution: "FMIS@MP"
+    });
+
+    var wlife_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '10-Wildlife',
       format: 'image/png',
       transparent: true,
@@ -200,7 +209,7 @@
       attribution: "FMIS@MP"
     });
 
-    var nhunt_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var nhunt_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '11-Non-Hunting',
       format: 'image/png',
       transparent: true,
@@ -209,7 +218,7 @@
       attribution: "FMIS@MP"
     });
 
-    var spk_wms = L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
+    var spk_wms = L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
       layers: '12-Agri-Land-Reform',
       format: 'image/png',
       transparent: true,
@@ -245,6 +254,7 @@
       },
       "ที่ดินรัฐ": {
         "เขตอุทยานแห่งชาติ": npark_wms,
+        "เขตป่าสงวนแห่งชาติ": rforest_wms,
         "เขตรักษาพันธุ์สัตว์ป่า": wlife_wms,
         "เขตห้ามล่าสัตว์ป่า": nhunt_wms,
         "ส.ป.ก.": spk_wms
@@ -316,7 +326,7 @@
 
     function getPopupInfo(lng,lat) {
       var msg = "";
-      var url = "http://fmis.forest.ku.ac.th:4567/check_law/" + lng +"/" + lat;
+      var url = "http://203.157.103.190:3000/check_law/" + lng +"/" + lat;
           
       $.ajax({
         type: "GET",
@@ -329,14 +339,14 @@
             if (! $.isEmptyObject(o) && o.pcode) { // highlight province via pcode
               var pcode = o.pcode;
               cur_pname = o.pname;
-              hili = new L.tileLayer.wms("http://fmis.forest.ku.ac.th:8080/geoserver/MP/wms", {
-                layers: 'MP:province',
+              hili = new L.tileLayer.wms("http://203.157.103.190:8080/geoserver/MP/wms", {
+                layers: 'MP:01-Province',
                 format: 'image/png',
                 transparent: true,  
                 opacity: 0.8,
                 version: '1.1.0',
                 attribution: 'FMIS@MP',
-                CQL_FILTER: "p_code='" + pcode + "'"
+                CQL_FILTER: "P_CODE='" + pcode + "'"
               }).addTo(map);
 
               // mp.bindPopup(cur_pname, provOptions).openPopup();
@@ -347,10 +357,10 @@
               var lon = parseFloat(o.longitude);
               var lat = parseFloat(o.latitude);
               var name = o.law_name;
-              var path = o.law_folder;
+              var path = o.law_folder.replace('fmis.forest.ku.ac.th','203.157.103.190');
 
               // create marker object create content and open popup
-              var msg = "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
+              msg += "<h4>" + name + "</h4><a href='" + path + "' target='_blank'>เอกสารประกอบเพื่อดูรายละเอียด</a>";
               msg += "<embed src='" + path + "#page=1&zoom=0&view=fit' type='application/pdf' ";
               msg += "width='100%'>";
               msg += "<p>" + cur_pname;
@@ -371,49 +381,6 @@
       });
     };
 
-    // LAB
-    var owsrootUrl = "http://fmis.forest.ku.ac.th:8080/geoserver/ows";
-    var defaultParameters = {
-      service : 'WFS',
-      version : '1.0.0',
-      request : 'GetFeature',
-      typeName : 'MP:08-Natural-Park',
-      outputFormat : 'text/javascript',
-      format_options : 'callback:getJson',
-      srsName : 'EPSG:4326'
-    };
-
-    var parameters = L.Util.extend(defaultParameters);
-    var URL = owsrootUrl + L.Util.getParamString(parameters);
-    var WFSLayer = null;
-
-    var ajax = $.ajax({
-      url: URL,
-      dataType: 'jsonp',
-      jsonpCallback: 'getJson',
-      success: function (response) {
-        WFSLayer = L.geoJson(response, {
-          style: function (feature) {
-            return {
-              stroke: false,
-              fillColor: 'FFFFFF',
-              fillOpacity: 0
-            };
-          },
-          onEachFeature: function (feature, layer) {
-            popupOptions = { maxWidth: 200 } ;
-            var name = feature.properties.name_e;
-            var area = feature.properties.area;
-            var msg = "<h1>" + name + "</h1><p>AREA:" + area + "</p>"; 
-            //layer.bindPopup("Popup text, access attributes with feature.properties.ATTRIBUTE_NAME"
-            //  ,popupOptions);
-            layer.bindPopup(msg, popupOptions);
-          }
-        }).addTo(map);
-      }
-    });
-
   </script>
 </body>
 </html>
-
